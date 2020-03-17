@@ -1,12 +1,14 @@
 <?php  
 	$id=$_GET['id'];
-
+	
+	var_dump($id);
+	
 	$dbHost="localhost";
 	$dbuser="root";
 	$dbpwd="";
 	$dbname="rando_reunion";
 
-    try{
+try{
         $dns="mysql:host=".$dbHost.";dbname=".$dbname.";charset=utf8";
         $pdo= new PDO($dns,$dbuser,$dbpwd);
 		$table=$pdo->query("SELECT * FROM hiking WHERE id=$id");
@@ -19,39 +21,44 @@
 			$heightD=$row["height_difference"];
 		}
 		if(isset($_POST['button'])){
-			try{
-				$pdo = new PDO($dns, $dbuser, $dbpwd);
-				// set the PDO error mode to exception
-				$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 			
-				$sql = "UPDATE hiking SET name=:name,
-						difficulty=:difficulty,
-						distance=:distance,
-						duration=:duration
-						height_difference=:height_difference
-						 WHERE id=:id";
+			$name=$_POST['name'];
+			$difficulty=$_POST['difficulty'];
+			$distance=$_POST['distance'];
+			$duration=$_POST['duration'];
+			$height_difference=$_POST['height_difference'];
 
-				 $stmt = $pdo->prepare($sql); 
+			$id=$_GET['id'];
+			
+			$dns="mysql:host=".$dbHost.";dbname=".$dbname.";charset=utf8";
+			$pdo= new PDO($dns,$dbuser,$dbpwd);
 
-				 $stmt->bindParam(':name', $_POST['name'], PDO::PARAM_STR);       
-				 $stmt->bindParam(':difficulty', $_POST['$difficulty'], PDO::PARAM_INT);    
-				 $stmt->bindParam(':distance', $_POST['distance'], PDO::PARAM_INT);
-				 // use PARAM_STR although a number  
-				 $stmt->bindParam(':duration', $_POST['duration'], PDO::PARAM_STR); 
-				 $stmt->bindParam(':height_difference', $_POST['height_difference'], PDO::PARAM_INT);   
+			$sql="UPDATE hiking SET name=:name,
+					difficulty=:difficulty,
+					distance=:distance,
+					duration=:duration,
+					height_difference=:height_difference,
+					 WHERE id=:id";
+					
+			$pdoResult= $pdo->prepare($sql);
 
-				 $stmt->execute(); 
-
-			}catch(PDOExeption $e){
-				echo "DB connexion ratey";
-			}
-			 echo "<script>alert('donnée bien modifier !');</script>";
+			$pdoExec= $pdoResult-> execute ([":name"=>$name,":difficulty"=>$difficulty,
+			":distance"=>$distance,":duration"=>$duration,
+			":height_difference"=>$height_difference,":id"=>$id]);
+		
+				 if($pdoExec){
+					echo "<script>alert('donnée bien modifier !');</script>";
+				 }else{
+					echo "<script>alert('donnée non modifier !');</script>";
+				 }
 		}
-    }catch(PDOExeption $e){
-        echo "DB connexion ratey";
-    }
+	
+}catch(PDOExeption $e){
+        echo "DB connexion echoué";
+}
 
 ?>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -62,7 +69,7 @@
 <body>
 	<a href="read.php">Liste des données</a>
 	<h1>Update</h1>
-	<form action="read.php" method="post">
+	<form action="" method="post">
 		<div>
 			<label for="name">Name</label>
 			<input type="text" name="name" value="<?php echo $nom; ?>">
